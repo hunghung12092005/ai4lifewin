@@ -17,7 +17,7 @@ class HomeController extends Controller
     public function chat(Request $request)
 {
     $request->validate([
-        'message' => 'required|string|max:1000',
+        'message' => 'required|string|max:8000',
     ]);
 
     $message = $request->input('message');
@@ -48,7 +48,7 @@ Luôn nhớ rằng đây là tư vấn dành cho sinh viên cao đẳng FPT Poly
 
 EOT;
 
-    $API_KEY = 'AIzaSyDdyQPlin693Vo16vKOWnI38qLJ5U2z5LQ';
+    $API_KEY = 'AIzaSyCjQJbHsnVRT-rExPn0MX_grBKnhAySI6M';
 
     $response = Http::withHeaders([
         'Content-Type' => 'application/json',
@@ -59,7 +59,12 @@ EOT;
     ]);
 
     if ($response->failed()) {
-        return response()->json(['reply' => 'Lỗi khi gọi API AI.'], 500);
+        $status = $response->status();
+        $body = $response->body();
+        return response()->json([
+            'reply' => 'Lỗi khi gọi API AI (HTTP ' . $status . ')',
+            'error' => $body ?: 'Không có nội dung lỗi'
+        ], 500);
     }
 
     $data = $response->json();
@@ -77,7 +82,7 @@ EOT;
 }
 
     // Dữ liệu ngành học cứng
-    private function Links()
+    public function Links()
     {
         return [
             [

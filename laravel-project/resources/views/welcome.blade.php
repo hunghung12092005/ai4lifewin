@@ -152,12 +152,11 @@
         <div class="row align-items-center g-4 mb-4">
             <div class="col-lg-7">
                 <h1 class="display-6 mb-3">
-                    Xây dựng ứng dụng tư vấn chọn ngành học dựa trên AI
+                    ứng dụng tư vấn chọn ngành học dựa trên AI
                 </h1>
                 <p class="lead muted mb-4">
-                    Hỗ trợ học sinh, sinh viên khóa 2007 xác định ngành học phù hợp với
-                    sở thích, năng lực và định hướng nghề nghiệp của bản thân. Ứng dụng
-                    sử dụng mô hình AI (OpenAI/Gemini) để phân tích dữ liệu và gợi ý ngành
+                    Hỗ trợ học sinh, sinh viên xác định ngành học phù hợp với
+                    sở thích, năng lực và định hướng nghề nghiệp của bản thân và gợi ý ngành
                     học trong danh mục của FPT Polytechnic.
                 </p>
                 <div class="d-flex flex-wrap gap-2 mb-3">
@@ -221,7 +220,7 @@
             <div class="col-lg-7">
                 <div class="card p-4">
                     <h2 class="h4 mb-3">Nhập thông tin để tư vấn bằng AI</h2>
-                    <form id="advisor-form" class="row g-3" method="POST" action="/chat" autocomplete="off">
+                    <form id="advisor-form" class="row g-3" method="POST" action="{{ route('home.chat') }}" autocomplete="off">
                         @csrf
 
                         <div class="col-md-6">
