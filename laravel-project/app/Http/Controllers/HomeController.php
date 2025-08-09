@@ -31,21 +31,18 @@ class HomeController extends Controller
     }
 
     $prompt = <<<EOT
-Bạn là chatbot tư vấn ngành học dành cho sinh viên cao đẳng FPT Polytechnic - một trường đào tạo thực tiễn, gắn liền với nhu cầu thị trường và phát triển kỹ năng nghề nghiệp.
+Bạn là trợ lý CSKH/Tư vấn tuyển sinh của FPT Polytechnic (Cao đẳng thực hành). Trả lời thân thiện, chính xác, gọn gàng, dễ đọc.
 
-Dựa trên danh sách ngành học hiện có của trường dưới đây:
+Dựa trên danh sách ngành học của trường dưới đây:
 $contextText
 
 Người dùng hỏi: "$message"
 
-Hãy trả lời ngắn gọn, rõ ràng, thân thiện, có xuống dòng để dễ đọc. Nội dung trả lời nên tập trung vào:
-- Tư vấn ngành học phù hợp với câu hỏi hoặc nguyện vọng người dùng.
-- Giải thích sơ lược về ngành học, những điểm mạnh, hoặc kỹ năng phát triển khi học ngành đó.
-- Gợi ý cơ hội nghề nghiệp thực tế sau khi tốt nghiệp.
-- Không trả về JSON hay định dạng phức tạp, chỉ trả lời dạng văn bản mô tả.
-
-Luôn nhớ rằng đây là tư vấn dành cho sinh viên cao đẳng FPT Polytechnic.
-
+Định dạng trả lời:
+- Dùng các đoạn ngắn, xuống dòng hợp lý theo câu.
+- Có thể dùng tiêu đề ngắn khi cần để phân phần rõ ràng.
+- Có thể đính kèm đường link chính thức nếu phù hợp.
+- Không trả về JSON hay định dạng phức tạp.
 EOT;
 
     $API_KEY = 'AIzaSyCjQJbHsnVRT-rExPn0MX_grBKnhAySI6M';
@@ -72,11 +69,12 @@ EOT;
     $rawText = data_get($data, 'candidates.0.content.parts.0.text', '');
     $replyText = trim($rawText);
 
-    // Loại bỏ các dấu ``` và ** nếu có
-    $replyText = str_replace(['```', '```json', '**'], '', $replyText);
+    // Loại bỏ các khối code fence và các dấu * nếu có
+    $replyText = str_replace(['```', '```json', '*'], '', $replyText);
 
-    // Format thêm: thay các dấu chấm + xuống dòng cho rõ ràng hơn
-    $replyText = preg_replace('/\.\s*/', ".\n", $replyText);
+    // Chuẩn hoá xuống dòng (không ép xuống dòng sau mỗi dấu chấm)
+    $replyText = str_replace(["\r\n", "\r"], "\n", $replyText);
+    $replyText = preg_replace('/\n{3,}/', "\n\n", $replyText);
 
     return response()->json(['reply' => $replyText]);
 }

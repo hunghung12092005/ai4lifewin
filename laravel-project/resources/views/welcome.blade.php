@@ -329,6 +329,30 @@
         </div>
     </footer>
 
+    <!-- Chatbot nổi góc trái dưới -->
+    <button id="chatbot-toggle" aria-label="Mở chatbot"
+        style="position: fixed; left: 16px; bottom: 16px; z-index: 1000; width: 54px; height: 54px; border-radius: 50%; border: none; background: var(--primary); color: #fff; box-shadow: 0 6px 16px rgba(0,0,0,0.15); font-weight: 700; cursor: pointer;">
+        AI
+    </button>
+
+    <div id="chatbot-panel" role="dialog" aria-modal="true" aria-labelledby="chatbot-title"
+        style="display: block; position: fixed; left: 16px; bottom: 78px; width: 360px; max-height: 70vh; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.18); z-index: 1000; overflow: hidden;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#fff7f2; border-bottom:1px solid #f1f1f1;">
+            <div>
+                <div id="chatbot-title" style="font-weight:600;">Trợ lý CSKH FPT Polytechnic</div>
+                <div class="muted" style="font-size:12px;">Tư vấn nhanh về ngành học, tuyển sinh, học phí...</div>
+            </div>
+            <button id="chatbot-close" aria-label="Đóng" style="border:none; background:transparent; font-size:20px; line-height:1; cursor:pointer;">×</button>
+        </div>
+        <div id="chatbot-messages" style="padding:12px; height: 360px; overflow:auto; background:#fafafa;"></div>
+        <div style="padding:10px; background:#fff; border-top:1px solid #f1f1f1;">
+            <div style="display:flex; gap:8px; align-items:flex-end;">
+                <textarea id="chatbot-input" rows="1" placeholder="Nhập câu hỏi..." style="flex:1; resize:none; max-height:120px; padding:8px 10px; border:1px solid #d1d5db; border-radius:8px; font-size:14px;"></textarea>
+                <button id="chatbot-send" class="btn btn-primary" style="padding:8px 14px;">Gửi</button>
+            </div>
+        </div>
+    </div>
+
    <script>
 const form = document.getElementById("advisor-form");
 const resultDiv = document.getElementById("chat-result");
@@ -364,16 +388,21 @@ if (form) {
     resultDiv.innerHTML = "<em>Đang xử lý, vui lòng chờ...</em>";
 
     try {
-      const response = await fetch("/chat", {
+      const response = await fetch("{{ route('home.chat') }}", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
           "X-CSRF-TOKEN": csrfToken,
         },
         body: JSON.stringify({ message: prompt }),
       });
 
-      if (!response.ok) throw new Error("Lỗi khi gọi API");
+      if (!response.ok) {
+        const errText = await response.text().catch(() => "");
+        throw new Error(`HTTP ${response.status} ${response.statusText}${errText ? ` - ${errText}` : ''}`);
+      }
 
       const result = await response.json();
       const replyText = result.reply || "";
@@ -453,30 +482,183 @@ if (form) {
         container.appendChild(listDiv);
       }
 
-      // Phần text còn lại (ngoài JSON), làm rõ format
+      // Phần text còn lại (ngoài JSON), parse markdown nhẹ & trình bày đẹp
       const remainingText = replyText.replace(jsonMatch ? jsonMatch[0] : "", "").trim();
       if (remainingText) {
+        const section = document.createElement("section");
+        section.style.marginTop = "20px";
+
         const sectionTitle = document.createElement("h4");
         sectionTitle.textContent = "Thông tin chi tiết:";
-        sectionTitle.style.marginTop = "20px";
-        sectionTitle.style.marginBottom = "8px";
+        sectionTitle.style.margin = "0 0 8px 0";
         sectionTitle.style.borderBottom = "2px solid #333";
         sectionTitle.style.paddingBottom = "4px";
+        section.appendChild(sectionTitle);
 
-        const pre = document.createElement("pre");
-        pre.style.whiteSpace = "pre-wrap";
-        pre.style.fontSize = "15px";
-        pre.style.lineHeight = "1.5";
-        pre.textContent = remainingText;
+        const content = document.createElement("div");
+        content.style.fontSize = "15px";
+        content.style.lineHeight = "1.6";
+        content.style.color = "#222";
 
-        container.appendChild(sectionTitle);
-        container.appendChild(pre);
+        // Chuyển các gạch đầu dòng (-, *, •) thành <ul><li>
+        function renderBullets(block) {
+          const lines = block.split(/\n/);
+          const ul = document.createElement("ul");
+          ul.style.margin = "0 0 12px 1rem";
+          let hasItem = false;
+          lines.forEach((line) => {
+            const m = line.match(/^\s*[-*•]\s+(.+)/);
+            if (m) {
+              const li = document.createElement("li");
+              li.textContent = m[1];
+              ul.appendChild(li);
+              hasItem = true;
+            }
+          });
+          return hasItem ? ul : null;
+        }
+
+        // Tiền xử lý: chuẩn hoá newline và tự xuống dòng theo câu
+        let textToFormat = remainingText.replace(/\r\n|\r/g, "\n");
+        textToFormat = textToFormat.replace(/([\.!?])\s+/g, '$1\n');
+
+        // Tách theo đoạn, xử lý heading, bullet, paragraph
+        const blocks = textToFormat
+          .split(/\n{2,}/)
+          .map((b) => b.trim())
+          .filter(Boolean);
+
+        blocks.forEach((block) => {
+          // Heading markdown kiểu "##" hoặc "#" ở đầu dòng => h5
+          if (/^(#+)\s+/.test(block)) {
+            const text = block.replace(/^#+\s+/, "").trim();
+            const h = document.createElement("h5");
+            h.textContent = text;
+            h.style.margin = "12px 0 6px";
+            content.appendChild(h);
+            return;
+          }
+
+          // Danh sách gạch đầu dòng
+          const ul = renderBullets(block);
+          if (ul) {
+            content.appendChild(ul);
+            return;
+          }
+
+          // Đoạn văn: chuyển URL thành link, hỗ trợ **bold** và *italic*
+          const p = document.createElement("p");
+          p.style.margin = "0 0 10px 0";
+          const withLinks = block.replace(
+            /(https?:\/\/[^\s)]+)|(www\.[^\s)]+)/g,
+            (m) => `<a href="${m.startsWith('http') ? m : 'http://' + m}" target="_blank" rel="noopener noreferrer">${m}</a>`
+          );
+          let html = withLinks
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1<\/strong>')
+            .replace(/(^|\s)\*(.*?)\*(?=\s|$)/g, '$1<em>$2<\/em>')
+            .replace(/\n/g, '<br/>');
+          // Loại bỏ mọi dấu * còn sót lại
+          html = html.replace(/\*/g, '');
+          p.innerHTML = html;
+          content.appendChild(p);
+        });
+
+        section.appendChild(content);
+        container.appendChild(section);
       }
     } catch (e) {
       container.textContent = replyText; // fallback hiện nguyên văn
     }
   }
 }
+</script>
+
+<script>
+// Chatbot (bottom-left)
+(function initChatbot() {
+  const toggleBtn = document.getElementById("chatbot-toggle");
+  const panel = document.getElementById("chatbot-panel");
+  const closeBtn = document.getElementById("chatbot-close");
+  const messages = document.getElementById("chatbot-messages");
+  const input = document.getElementById("chatbot-input");
+  const sendBtn = document.getElementById("chatbot-send");
+  if (!toggleBtn || !panel || !messages || !input || !sendBtn) return;
+
+  const csrfTokenValue = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+
+  function showPanel() { panel.style.display = "block"; input.focus(); }
+  function hidePanel() { panel.style.display = "none"; }
+  function togglePanel() { (panel.style.display === "none" || !panel.style.display) ? showPanel() : hidePanel(); }
+  function scrollToBottom() { messages.scrollTop = messages.scrollHeight; }
+
+  function addBubble(text, role = "assistant") {
+    const row = document.createElement("div");
+    row.style.display = "flex";
+    row.style.marginBottom = "8px";
+    row.style.justifyContent = role === "user" ? "flex-end" : "flex-start";
+    const bubble = document.createElement("div");
+    bubble.style.maxWidth = "78%";
+    bubble.style.padding = "8px 10px";
+    bubble.style.borderRadius = "10px";
+    bubble.style.whiteSpace = "pre-wrap";
+    bubble.style.fontSize = "14px";
+    bubble.style.lineHeight = "1.6";
+    bubble.style.boxShadow = "0 1px 2px rgba(0,0,0,0.04)";
+    if (role === "user") { bubble.style.background = "#e8f0ff"; bubble.style.color = "#112"; }
+    else { bubble.style.background = "#fff"; bubble.style.border = "1px solid #eee"; bubble.style.color = "#222"; }
+    bubble.textContent = text;
+    row.appendChild(bubble);
+    messages.appendChild(row);
+    scrollToBottom();
+  }
+
+  function addTyping() {
+    const row = document.createElement("div"); row.id = "chatbot-typing"; row.style.display = "flex"; row.style.marginBottom = "8px";
+    const bubble = document.createElement("div"); bubble.style.background = "#fff"; bubble.style.border = "1px solid #eee"; bubble.style.maxWidth = "78%"; bubble.style.padding = "8px 10px"; bubble.style.borderRadius = "10px"; bubble.style.fontSize = "14px"; bubble.textContent = "Đang gõ...";
+    row.appendChild(bubble); messages.appendChild(row); scrollToBottom();
+  }
+  function removeTyping() { const row = document.getElementById("chatbot-typing"); if (row) row.remove(); }
+
+  function normalizeForDisplay(raw) {
+    if (!raw) return "";
+    // Chuẩn hoá newline và tự xuống dòng theo câu, loại dấu *
+    return raw.replace(/\r\n|\r/g, "\n").replace(/[\*]+/g, "").replace(/([\.!?])\s+/g, '$1\n');
+  }
+
+  async function sendMessage() {
+    const text = input.value.trim(); if (!text) return;
+    addBubble(text, "user"); input.value = ""; addTyping();
+    try {
+      const response = await fetch("{{ route('home.chat') }}", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+          "X-CSRF-TOKEN": csrfTokenValue,
+        },
+        body: JSON.stringify({ message: text })
+      });
+      const payload = await (response.ok ? response.json() : response.json().catch(() => ({ reply: 'Lỗi: ' + response.status })));
+      removeTyping();
+      addBubble(normalizeForDisplay(payload.reply || "Xin lỗi, chưa có phản hồi."), "assistant");
+    } catch (e) {
+      removeTyping();
+      addBubble("Có lỗi xảy ra khi gọi AI.", "assistant");
+    }
+  }
+
+  toggleBtn.addEventListener("click", togglePanel);
+  if (closeBtn) closeBtn.addEventListener("click", hidePanel);
+  sendBtn.addEventListener("click", sendMessage);
+  input.addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+  // Hiển thị sẵn và chào khi lần đầu vào
+  showPanel();
+  if (!messages.dataset.greeted) {
+    addBubble("Xin chào! Mình là trợ lý CSKH FPT Polytechnic. Bạn có thể hỏi về ngành đào tạo, tuyển sinh, học phí, học bổng...", "assistant");
+    messages.dataset.greeted = "1";
+  }
+})();
 </script>
 
 </body>
