@@ -5,16 +5,106 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>FPT Polytechnic - Ứng dụng tư vấn chọn ngành dựa trên AI</title>
   <link rel="stylesheet" href="{{ asset('assets/css/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <style>
-    :root { --primary:#f37021; --dark:#1b1b18; }
-    body { background:#fafafa; color:#1b1b18; }
-    .hero { background:linear-gradient(135deg, rgba(243,112,33,.08), rgba(255,204,153,.18)); border-bottom:1px solid #eee; }
-    .card { border:1px solid #eee; box-shadow:0 1px 2px rgba(0,0,0,.04); }
-    .section-title { font-weight:700; letter-spacing:.2px; }
-    .badge-dot { display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--primary); margin-right:8px; }
-    .btn-primary { background:var(--primary); border-color:var(--primary); }
-    .btn-primary:hover { filter:brightness(.95); }
-    .muted { color:#6b7280; }
+    :root {
+      --primary: #F37021; /* Màu chủ đạo FPT */
+      --primary-light: #FF8C4B; /* Màu cam sáng hơn */
+      --primary-dark: #D65A1A; /* Màu cam đậm hơn */
+      --background: #F8FAFC; /* Nền trắng nhạt */
+      --text: #1F2A44; /* Màu chữ chính */
+      --muted: #6B7280; /* Màu chữ phụ */
+      --accent: #4B6CB7; /* Màu xanh điểm nhấn */
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--background);
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .hero {
+      background: linear-gradient(135deg, #FFF3E6 0%, #FFE8CC 100%);
+      border-bottom: 1px solid #E5E7EB;
+      padding: 2rem 0;
+    }
+    .card {
+      border: 1px solid #E5E7EB;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      border-radius: 12px;
+      transition: transform 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-4px);
+    }
+    .section-title {
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      color: var(--text);
+    }
+    .badge-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--primary);
+      margin-right: 10px;
+      border: 1px solid var(--primary-light);
+    }
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      border-radius: 8px;
+      font-weight: 500;
+      padding: 0.75rem 1.5rem;
+      transition: background 0.2s ease;
+    }
+    .btn-primary:hover {
+      background: var(--primary-dark);
+      border-color: var(--primary-dark);
+    }
+    .btn-outline-secondary {
+      border-color: var(--accent);
+      color: var(--accent);
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    .btn-outline-secondary:hover {
+      background: var(--accent);
+      color: #fff;
+    }
+    .muted {
+      color: var(--muted);
+    }
+    a.text-decoration-none {
+      color: var(--accent);
+      font-weight: 500;
+      transition: color 0.2s ease;
+    }
+    a.text-decoration-none:hover {
+      color: var(--primary);
+    }
+    .form-control, .form-range {
+      border-radius: 8px;
+      border: 1px solid #D1D5DB;
+      transition: border-color 0.2s ease;
+    }
+    .form-control:focus, .form-range:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(243,112,33,0.1);
+    }
+    .container {
+      max-width: 1200px;
+      padding-left: 1.5rem;
+      padding-right: 1.5rem;
+    }
+    .row.g-4 {
+      margin-bottom: 2rem;
+    }
+    footer {
+      background: var(--background);
+      border-top: 1px solid #E5E7EB;
+      padding: 2rem 0;
+    }
   </style>
 </head>
 <body>
@@ -210,5 +300,3 @@
   </script>
 </body>
 </html>
-
-
