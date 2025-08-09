@@ -21,6 +21,7 @@ class HomeController extends Controller
     ]);
 
     $message = $request->input('message');
+    $profile = $request->input('profile'); // optional structured data from form
 
     $majorsReal = collect($this->Links());
 
@@ -88,9 +89,16 @@ EOT;
         }
     }
 
+    // Tính điểm phù hợp theo hồ sơ (nếu có)
+    $ranking = [];
+    if (is_array($profile)) {
+        $ranking = $this->computeSuitabilityRanking($profile, $majorsReal->all());
+    }
+
     return response()->json([
         'reply' => $replyText,
         'majors' => $matchedMajors,
+        'ranking' => $ranking,
     ]);
 }
 
@@ -141,6 +149,115 @@ EOT;
                 'url' => 'https://vi.wikipedia.org/wiki/Kiến_trúc_sư'
             ],
         ];
+    }
+
+    /**
+     * Tính điểm phù hợp theo hồ sơ người dùng cho từng ngành (0-100)
+     * Đơn giản hoá: dùng trọng số theo slider + khớp từ khoá interests/skills/subjects
+     */
+    private function computeSuitabilityRanking(array $profile, array $majors): array
+    {
+        $interests = mb_strtolower((string)($profile['interests'] ?? ''));
+        $skills = mb_strtolower((string)($profile['skills'] ?? ''));
+        $favoriteSubjects = mb_strtolower((string)($profile['favoriteSubjects'] ?? ''));
+        $aff = $profile['affinity'] ?? [];
+        $tech = (int)($aff['technology'] ?? 0);
+        $cre = (int)($aff['creativity'] ?? 0);
+        $com = (int)($aff['communication'] ?? 0);
+        $log = (int)($aff['logic'] ?? 0);
+
+        // Từ khoá cho từng ngành
+        $kw = [
+            'Công nghệ thông tin' => ['công nghệ','lập trình','phần mềm','it','data','mạng','khoa học máy tính','ai'],
+            'Quản trị kinh doanh' => ['kinh doanh','marketing','quản trị','bán hàng','thương mại','startup','quản lý'],
+            'Kế toán' => ['kế toán','tài chính','sổ sách','thuế','kiểm toán','báo cáo tài chính'],
+            'Ngôn ngữ Anh' => ['tiếng anh','giao tiếp','phiên dịch','biên dịch','ielts','toeic'],
+            'Du lịch - Nhà hàng - Khách sạn' => ['du lịch','nhà hàng','khách sạn','dịch vụ','lễ tân','hướng dẫn viên'],
+            'Y khoa' => ['y','bác sĩ','điều dưỡng','sức khỏe','y tế','dược'],
+            'Kiến trúc' => ['kiến trúc','xây dựng','nội thất','thiết kế kiến trúc','quy hoạch'],
+        ];
+
+        $ranking = [];
+        foreach ($majors as $m) {
+            $title = $m['title'];
+            $score = 0.0;
+
+            // Trọng số theo slider
+            switch ($title) {
+                case 'Công nghệ thông tin':
+                    $score += 0.45 * $tech + 0.35 * $log + 0.20 * $cre;
+                    break;
+                case 'Quản trị kinh doanh':
+                    $score += 0.4 * $com + 0.35 * $cre + 0.25 * $log;
+                    break;
+                case 'Kế toán':
+                    $score += 0.55 * $log + 0.25 * $com + 0.20 * $tech;
+                    break;
+                case 'Ngôn ngữ Anh':
+                    $score += 0.6 * $com + 0.25 * $cre + 0.15 * $log;
+                    break;
+                case 'Du lịch - Nhà hàng - Khách sạn':
+                    $score += 0.55 * $com + 0.25 * $cre + 0.20 * $log;
+                    break;
+                case 'Y khoa':
+                    $score += 0.5 * $log + 0.25 * $com + 0.25 * $tech;
+                    break;
+                case 'Kiến trúc':
+                    $score += 0.5 * $cre + 0.3 * $log + 0.2 * $tech;
+                    break;
+                default:
+                    $score += 0.25 * ($tech + $cre + $com + $log);
+            }
+
+            // Điểm cộng theo từ khoá trong interests/skills/subjects
+            $bonus = 0;
+            $hay = $interests . ' ' . $skills . ' ' . $favoriteSubjects;
+            foreach ($kw[$title] ?? [] as $k) {
+                if (mb_stripos($hay, $k) !== false) {
+                    $bonus += 6; // mỗi từ khớp cộng 6 điểm
+                }
+            }
+            $score += $bonus;
+
+            // Chuẩn hoá 0..100
+            $score = max(0, min(100, round($score)));
+
+            // Lý do ngắn gọn (top yếu tố nổi bật + số từ khoá khớp)
+            $factors = [
+                'Công nghệ' => $tech,
+                'Sáng tạo' => $cre,
+                'Giao tiếp' => $com,
+                'Logic' => $log,
+            ];
+            arsort($factors);
+            $top2 = array_slice(array_keys($factors), 0, 2);
+            $matchCount = 0;
+            foreach (($kw[$title] ?? []) as $k) {
+                if (mb_stripos($hay, $k) !== false) $matchCount++;
+            }
+            $reasons = [];
+            $reasons[] = 'Yếu tố nổi bật: ' . implode(', ', $top2);
+            if ($matchCount > 0) $reasons[] = 'Khớp ' . $matchCount . ' từ khoá sở thích/kỹ năng/môn yêu thích.';
+
+            $ranking[] = [
+                'title' => $title,
+                'score' => $score,
+                'reasons' => $reasons,
+                'factors' => [
+                    'technology' => $tech,
+                    'creativity' => $cre,
+                    'communication' => $com,
+                    'logic' => $log,
+                ],
+            ];
+        }
+
+        // Sắp xếp giảm dần theo điểm
+        usort($ranking, function ($a, $b) {
+            return $b['score'] <=> $a['score'];
+        });
+
+        return $ranking;
     }
 
     // Lưu câu trả lời để chia sẻ (dùng cache TTL)

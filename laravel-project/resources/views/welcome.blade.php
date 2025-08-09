@@ -152,7 +152,7 @@
         <div class="row align-items-center g-4 mb-4">
             <div class="col-lg-7">
                 <h1 class="display-6 mb-3">
-                    ứng dụng tư vấn chọn ngành học dựa trên AI
+                    Ứng dụng tư vấn chọn ngành học dựa trên AI
                 </h1>
                 <p class="lead muted mb-4">
                     Hỗ trợ học sinh, sinh viên xác định ngành học phù hợp với
@@ -414,7 +414,7 @@ if (form) {
           "X-Requested-With": "XMLHttpRequest",
           "X-CSRF-TOKEN": csrfToken,
         },
-        body: JSON.stringify({ message: prompt }),
+        body: JSON.stringify({ message: prompt, profile: data }),
       });
 
       if (!response.ok) {
@@ -425,15 +425,16 @@ if (form) {
       const result = await response.json();
       const replyText = result.reply || "";
       const majorsFromServer = Array.isArray(result.majors) ? result.majors : [];
+      const ranking = Array.isArray(result.ranking) ? result.ranking : [];
 
-      renderResult(replyText, majorsFromServer);
+      renderResult(replyText, majorsFromServer, ranking);
     } catch (error) {
       resultDiv.textContent = "Có lỗi xảy ra: " + error.message;
     }
   });
 
   // Hàm render kết quả
-  function renderResult(replyText, majorsFromServer = []) {
+  function renderResult(replyText, majorsFromServer = [], ranking = []) {
     const container = document.getElementById("chat-result");
     container.innerHTML = "";
 
@@ -535,6 +536,72 @@ if (form) {
           listDiv.appendChild(itemDiv);
         });
         container.appendChild(listDiv);
+      }
+
+      // Nếu backend trả về ranking điểm phù hợp, hiển thị ở đầu
+      if (ranking && ranking.length) {
+        const rankDiv = document.createElement('div');
+        rankDiv.innerHTML = `<h4 style="margin: 8px 0 8px; border-bottom: 2px solid #333; padding-bottom: 4px;">Xếp hạng phù hợp (FPT Polytechnic)</h4>`;
+        ranking.slice(0, 5).forEach(r => {
+          const row = document.createElement('div');
+          row.style.display = 'grid';
+          row.style.gridTemplateColumns = '1fr 80px';
+          row.style.gap = '10px';
+          row.style.marginBottom = '6px';
+          const name = document.createElement('div');
+          name.textContent = r.title;
+          const barWrap = document.createElement('div');
+          barWrap.style.background = '#eee';
+          barWrap.style.borderRadius = '999px';
+          barWrap.style.height = '10px';
+          const bar = document.createElement('div');
+          bar.style.height = '10px';
+          bar.style.borderRadius = '999px';
+          bar.style.width = Math.max(5, Math.min(100, r.score)) + '%';
+          bar.style.background = 'linear-gradient(90deg, #f37021, #ff8c4b)';
+          barWrap.appendChild(bar);
+          const score = document.createElement('div');
+          score.textContent = r.score + '%';
+          score.style.textAlign = 'right';
+          const grid = document.createElement('div');
+          grid.style.display = 'grid';
+          grid.style.gridTemplateColumns = '1fr 120px 40px';
+          grid.style.gap = '8px';
+          grid.appendChild(name);
+          grid.appendChild(barWrap);
+          grid.appendChild(score);
+          rankDiv.appendChild(grid);
+
+          // Lý do (reasons) + mini-bars cho 4 yếu tố
+          if (Array.isArray(r.reasons) && r.reasons.length) {
+            const reasons = document.createElement('div');
+            reasons.style.fontSize = '12px';
+            reasons.style.color = '#555';
+            reasons.style.margin = '2px 0 6px';
+            reasons.textContent = r.reasons.join(' • ');
+            rankDiv.appendChild(reasons);
+          }
+          if (r.factors) {
+            const f = r.factors;
+            const mini = document.createElement('div');
+            mini.style.display = 'grid';
+            mini.style.gridTemplateColumns = 'repeat(4, 1fr)';
+            mini.style.gap = '8px';
+            mini.style.marginBottom = '8px';
+            [['Công nghệ','technology'],['Sáng tạo','creativity'],['Giao tiếp','communication'],['Logic','logic']].forEach(([label,key]) => {
+              const wrap = document.createElement('div');
+              const lab = document.createElement('div'); lab.textContent = label; lab.style.fontSize='11px'; lab.style.color='#666';
+              const w = document.createElement('div'); w.style.height='6px'; w.style.background='#eee'; w.style.borderRadius='999px';
+              const b = document.createElement('div'); b.style.height='6px'; b.style.borderRadius='999px'; b.style.width = Math.max(3, Math.min(100, parseInt(f[key]||0)))+'%'; b.style.background='#4b6cb7';
+              w.appendChild(b);
+              wrap.appendChild(lab);
+              wrap.appendChild(w);
+              mini.appendChild(wrap);
+            });
+            rankDiv.appendChild(mini);
+          }
+        });
+        container.appendChild(rankDiv);
       }
 
       // Phần text còn lại (ngoài JSON), parse markdown nhẹ & trình bày đẹp
