@@ -31,9 +31,9 @@ class HomeController extends Controller
     }
 
     $prompt = <<<EOT
-Bạn là trợ lý CSKH/Tư vấn tuyển sinh của FPT Polytechnic (Cao đẳng thực hành). Trả lời thân thiện, chính xác, gọn gàng, dễ đọc.
+Bạn là trợ lý CSKH/Tư vấn tuyển sinh của FPT Polytechnic (Cao đẳng thực hành). Trả lời thân thiện, chính xác, gọn gàng, dễ đọc, LUÔN định hướng về FPT Polytechnic (không tư vấn trường khác).
 
-Dựa trên danh sách ngành học của trường dưới đây:
+Dựa trên danh sách ngành học của trường dưới đây (khi đề cập, vui lòng dùng đúng tên ngành như trong danh sách):
 $contextText
 
 Người dùng hỏi: "$message"
@@ -41,8 +41,9 @@ Người dùng hỏi: "$message"
 Định dạng trả lời:
 - Dùng các đoạn ngắn, xuống dòng hợp lý theo câu.
 - Có thể dùng tiêu đề ngắn khi cần để phân phần rõ ràng.
-- Có thể đính kèm đường link chính thức nếu phù hợp.
+- Có thể đính kèm đường link chính thức (website FPT Polytechnic) khi phù hợp.
 - Không trả về JSON hay định dạng phức tạp.
+- Nếu câu hỏi ngoài phạm vi nhà trường, hướng người dùng về các kênh chính thức của FPT Polytechnic.
 EOT;
 
     $API_KEY = 'AIzaSyCjQJbHsnVRT-rExPn0MX_grBKnhAySI6M';
@@ -76,7 +77,21 @@ EOT;
     $replyText = str_replace(["\r\n", "\r"], "\n", $replyText);
     $replyText = preg_replace('/\n{3,}/', "\n\n", $replyText);
 
-    return response()->json(['reply' => $replyText]);
+    // Ghép thêm hình ảnh/ngành liên quan nếu phát hiện tên ngành trong câu trả lời
+    $matchedMajors = [];
+    foreach ($majorsReal as $major) {
+        if (!empty($major['title']) && stripos($replyText, $major['title']) !== false) {
+            $matchedMajors[] = $major;
+        }
+        if (count($matchedMajors) >= 3) {
+            break;
+        }
+    }
+
+    return response()->json([
+        'reply' => $replyText,
+        'majors' => $matchedMajors,
+    ]);
 }
 
     // Dữ liệu ngành học cứng
@@ -126,5 +141,36 @@ EOT;
                 'url' => 'https://vi.wikipedia.org/wiki/Kiến_trúc_sư'
             ],
         ];
+    }
+
+    // Lưu câu trả lời để chia sẻ (dùng cache TTL)
+    public function share(Request $request)
+    {
+        $data = $request->validate([
+            'reply' => 'required|string',
+            'majors' => 'nullable|array',
+        ]);
+
+        // Tạo id ngắn
+        $id = substr(bin2hex(random_bytes(8)), 0, 12);
+        $payload = [
+            'reply' => $data['reply'],
+            'majors' => $data['majors'] ?? [],
+            'ts' => now()->toIso8601String(),
+        ];
+        // Lưu 7 ngày
+        cache()->put('share:' . $id, $payload, now()->addDays(7));
+
+        return response()->json(['id' => $id, 'url' => route('share.view', ['id' => $id])]);
+    }
+
+    // Xem nội dung chia sẻ
+    public function viewShare(string $id)
+    {
+        $payload = cache()->get('share:' . $id);
+        if (!$payload) {
+            abort(404);
+        }
+        return view('share', ['data' => $payload]);
     }
 }

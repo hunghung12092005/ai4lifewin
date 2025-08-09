@@ -304,12 +304,11 @@
                 <div class="card p-4">
                     <h2 id="about" class="h5 mb-3">Ứng dụng làm được gì?</h2>
                     <ul class="small mb-3">
-                        <li><strong>Phân tích hồ sơ</strong>: tổng hợp sở thích, kỹ năng, điểm số, thói quen...</li>
+                       
                         <li><strong>Xếp hạng phù hợp</strong> từng ngành trong danh sách FPT Polytechnic</li>
                         <li><strong>Giải thích lý do</strong> + đề xuất môn/kỹ năng nên học</li>
-                        <li><strong>Lưu kết quả</strong> để so sánh giữa các lần tư vấn</li>
                     </ul>
-                    <div class="rounded overflow-hidden border">
+                    <div class="rounded overflow-hidden">
                         <img class="w-100"
                             src="https://vuainnhanh.com/wp-content/uploads/2023/02/logo-fpt-polytechnic.png"
                             alt="FPT Polytechnic" />
@@ -351,6 +350,25 @@
                 <button id="chatbot-send" class="btn btn-primary" style="padding:8px 14px;">Gửi</button>
             </div>
         </div>
+    </div>
+    
+    <!-- Overlay QR chia sẻ -->
+    <div id="qr-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:2000; align-items:center; justify-content:center;">
+      <div style="background:#fff; padding:0; border-radius:14px; width:340px; text-align:center; box-shadow:0 16px 40px rgba(0,0,0,0.28); overflow:hidden;">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#fff7f2; border-bottom:1px solid #f1f1f1;">
+          <div style="font-weight:700; letter-spacing:.2px;">Quét để xem chia sẻ</div>
+          <button id="qr-close" aria-label="Đóng" style="border:none; background:transparent; font-size:20px; line-height:1; cursor:pointer;">×</button>
+        </div>
+        <div style="padding:16px;">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:10px;">
+            <div style="padding:8px; background:#fff; border:1px solid #eee; border-radius:12px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+              <img id="qr-img" alt="QR" src="" style="width:240px; height:240px; border-radius:8px;"/>
+            </div>
+            <a id="qr-link" target="_blank" rel="noopener" style="font-size:12px; max-width:280px; word-break:break-all; color:#4b6cb7; text-decoration:underline;"></a>
+            <a id="qr-download" class="btn btn-outline-secondary btn-sm" style="margin-top:4px;" download="fptpoly-qr.png">Tải QR</a>
+          </div>
+        </div>
+      </div>
     </div>
 
    <script>
@@ -406,15 +424,16 @@ if (form) {
 
       const result = await response.json();
       const replyText = result.reply || "";
+      const majorsFromServer = Array.isArray(result.majors) ? result.majors : [];
 
-      renderResult(replyText);
+      renderResult(replyText, majorsFromServer);
     } catch (error) {
       resultDiv.textContent = "Có lỗi xảy ra: " + error.message;
     }
   });
 
   // Hàm render kết quả
-  function renderResult(replyText) {
+  function renderResult(replyText, majorsFromServer = []) {
     const container = document.getElementById("chat-result");
     container.innerHTML = "";
 
@@ -429,16 +448,17 @@ if (form) {
       // Nếu có danh sách ngành học dạng JSON
       if (majors && Array.isArray(majors)) {
         const listDiv = document.createElement("div");
-        listDiv.innerHTML = `<h4 style="margin-bottom: 12px; border-bottom: 2px solid #333; padding-bottom: 4px;">Danh sách ngành phù hợp:</h4>`;
+        listDiv.innerHTML = `<h4 style="margin-bottom: 12px; border-bottom: 2px solid #333; padding-bottom: 4px;">Danh sách ngành phù hợp (FPT Polytechnic):</h4>`;
 
         majors.forEach((major) => {
           const itemDiv = document.createElement("div");
           itemDiv.style.borderBottom = "1px solid #ddd";
           itemDiv.style.paddingBottom = "12px";
           itemDiv.style.marginBottom = "12px";
-          itemDiv.style.display = "flex";
-          itemDiv.style.gap = "15px";
-          itemDiv.style.alignItems = "center";
+          itemDiv.style.display = "grid";
+          itemDiv.style.gridTemplateColumns = "120px 1fr";
+          itemDiv.style.gap = "12px";
+          itemDiv.style.alignItems = "start";
 
           // Ảnh có link
           if (major.image && major.url) {
@@ -451,9 +471,11 @@ if (form) {
             img.src = major.image;
             img.alt = major.title || "Hình ngành học";
             img.style.width = "120px";
-            img.style.height = "auto";
+            img.style.height = "90px";
             img.style.borderRadius = "8px";
             img.style.objectFit = "cover";
+            img.style.border = "1px solid #eee";
+            img.style.boxShadow = "0 2px 6px rgba(0,0,0,0.06)";
 
             link.appendChild(img);
             itemDiv.appendChild(link);
@@ -479,6 +501,39 @@ if (form) {
           listDiv.appendChild(itemDiv);
         });
 
+        container.appendChild(listDiv);
+      }
+
+      // Nếu backend trả về majors gợi ý (khi không có JSON trong text)
+      if ((!majors || !Array.isArray(majors)) && majorsFromServer.length) {
+        const listDiv = document.createElement("div");
+        listDiv.innerHTML = `<h4 style="margin-bottom: 12px; border-bottom: 2px solid #333; padding-bottom: 4px;">Ngành liên quan (FPT Polytechnic):</h4>`;
+        majorsFromServer.slice(0, 3).forEach((major) => {
+          const itemDiv = document.createElement("div");
+          itemDiv.style.borderBottom = "1px solid #ddd";
+          itemDiv.style.paddingBottom = "12px";
+          itemDiv.style.marginBottom = "12px";
+          itemDiv.style.display = "grid";
+          itemDiv.style.gridTemplateColumns = "120px 1fr";
+          itemDiv.style.gap = "12px";
+          itemDiv.style.alignItems = "start";
+
+          if (major.image && major.url) {
+            const link = document.createElement("a");
+            link.href = major.url; link.target = "_blank"; link.rel = "noopener noreferrer";
+            const img = document.createElement("img");
+            img.src = major.image; img.alt = major.title || "Hình ngành học";
+            img.style.width = "120px"; img.style.height = "90px"; img.style.borderRadius = "8px"; img.style.objectFit = "cover"; img.style.border = "1px solid #eee"; img.style.boxShadow = "0 2px 6px rgba(0,0,0,0.06)";
+            link.appendChild(img); itemDiv.appendChild(link);
+          }
+
+          const infoDiv = document.createElement("div");
+          const title = document.createElement("h5"); title.textContent = major.title || "Ngành"; title.style.margin = "0 0 6px 0"; title.style.color = "#222";
+          const desc = document.createElement("p"); desc.textContent = major.description || ""; desc.style.margin = "0"; desc.style.whiteSpace = "pre-wrap"; desc.style.color = "#444";
+          infoDiv.appendChild(title); infoDiv.appendChild(desc); itemDiv.appendChild(infoDiv);
+
+          listDiv.appendChild(itemDiv);
+        });
         container.appendChild(listDiv);
       }
 
@@ -564,6 +619,53 @@ if (form) {
         });
 
         section.appendChild(content);
+
+        // Thanh hành động: nút chia sẻ (tạo QR)
+        const actions = document.createElement('div');
+        actions.style.marginTop = '12px';
+        const shareBtn = document.createElement('button');
+        shareBtn.className = 'btn btn-outline-secondary btn-sm';
+        shareBtn.textContent = 'Chia sẻ (QR)';
+        shareBtn.addEventListener('click', async () => {
+          try {
+            const resp = await fetch('{{ route('share.create') }}', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken,
+              },
+              body: JSON.stringify({ reply: replyText, majors: majorsFromServer })
+            });
+            const data = await resp.json();
+            if (!data || !data.url) throw new Error('No share URL');
+            // Dùng origin hiện tại để tạo URL có thể truy cập từ thiết bị khác trong LAN
+            const u = new URL(data.url, window.location.origin);
+            const shareUrl = window.location.origin + u.pathname;
+            const qrUrlPrimary = `https://chart.googleapis.com/chart?chs=240x240&cht=qr&chl=${encodeURIComponent(shareUrl)}`;
+            const qrUrlFallback = `https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(shareUrl)}`;
+            const overlay = document.getElementById('qr-overlay');
+            const qrImg = document.getElementById('qr-img');
+            const qrLink = document.getElementById('qr-link');
+            const qrDownload = document.getElementById('qr-download');
+            const qrClose = document.getElementById('qr-close');
+            if (overlay && qrImg && qrLink && qrDownload) {
+              qrImg.onerror = () => { qrImg.src = qrUrlFallback; qrDownload.href = qrUrlFallback; };
+              qrImg.src = qrUrlPrimary;
+              qrLink.href = shareUrl;
+              qrLink.textContent = shareUrl;
+              qrDownload.href = qrUrlPrimary;
+              overlay.style.display = 'flex';
+              if (qrClose) qrClose.onclick = () => overlay.style.display = 'none';
+              overlay.onclick = (e) => { if (e.target === overlay) overlay.style.display = 'none'; };
+            }
+          } catch (e) {
+            alert('Không tạo được liên kết chia sẻ.');
+          }
+        });
+        actions.appendChild(shareBtn);
+        section.appendChild(actions);
         container.appendChild(section);
       }
     } catch (e) {
@@ -606,7 +708,29 @@ if (form) {
     bubble.style.boxShadow = "0 1px 2px rgba(0,0,0,0.04)";
     if (role === "user") { bubble.style.background = "#e8f0ff"; bubble.style.color = "#112"; }
     else { bubble.style.background = "#fff"; bubble.style.border = "1px solid #eee"; bubble.style.color = "#222"; }
-    bubble.textContent = text;
+
+    function escapeHtml(s) {
+      return s
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+    function linkify(escaped) {
+      return escaped.replace(/(https?:\/\/[^\s)]+)|(www\.[^\s)]+)/g, (m) => {
+        const url = m.startsWith('http') ? m : 'http://' + m;
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${m}</a>`;
+      });
+    }
+
+    if (role === "assistant") {
+      const safe = escapeHtml(text);
+      const withLinks = linkify(safe);
+      bubble.innerHTML = withLinks.replace(/\n/g, '<br/>');
+    } else {
+      bubble.textContent = text;
+    }
     row.appendChild(bubble);
     messages.appendChild(row);
     scrollToBottom();
