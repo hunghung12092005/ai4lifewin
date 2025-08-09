@@ -11,4 +11,4 @@ Route::post('/chat', [HomeController::class, 'chat'])->name('home.chat');
 
 
 
-Route::get('/api/majors', [aiController::class, 'Links'])->name('api.majors');
+Route::get('/api/link', [HomeController::class, 'Links'])->name('api.link');
