@@ -3,7 +3,8 @@
 use App\Http\Controllers\aiController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+use App\Http\Controllers\HomeController;
+
+Route::get('/', [HomeController::class, 'index']);
+
 Route::get('/chat', [aiController::class, 'hotelLinks']);
