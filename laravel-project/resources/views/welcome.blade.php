@@ -295,6 +295,8 @@
                         <div class="col-12 d-flex gap-2">
                             <button type="submit" class="btn btn-primary">Phân tích bằng AI</button>
                             <a href="#features" class="btn btn-outline-secondary">Xem yêu cầu</a>
+                            <button type="button" id="btn-save-form" class="btn btn-outline-secondary">Lưu hồ sơ</button>
+                            <button type="button" id="btn-show-forms" class="btn btn-outline-secondary">Hồ sơ đã lưu</button>
                         </div>
                     </form>
                 </div>
@@ -327,6 +329,15 @@
             <span class="muted">Phiên bản demo phục vụ cuộc thi</span>
         </div>
     </footer>
+
+    <!-- Panel danh sách hồ sơ đã lưu -->
+    <div id="saved-panel" style="display:none; position:fixed; right:16px; bottom:80px; width:360px; max-height:60vh; background:#fff; border:1px solid #e5e7eb; border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,0.18); z-index:1000; overflow:hidden;">
+      <div style="display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#fff7f2; border-bottom:1px solid #f1f1f1;">
+        <div style="font-weight:600;">Hồ sơ đã lưu</div>
+        <button id="saved-close" aria-label="Đóng" style="border:none; background:transparent; font-size:20px; line-height:1; cursor:pointer;">×</button>
+      </div>
+      <div id="saved-list" style="padding:10px; overflow:auto; max-height: calc(60vh - 48px);"></div>
+    </div>
 
     <!-- Chatbot nổi góc trái dưới -->
     <button id="chatbot-toggle" aria-label="Mở chatbot"
@@ -376,6 +387,10 @@ const form = document.getElementById("advisor-form");
 const resultDiv = document.getElementById("chat-result");
 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute("content");
 const messageInput = document.getElementById("message");
+const btnSaveForm = document.getElementById('btn-save-form');
+const btnShowForms = document.getElementById('btn-show-forms');
+const savedPanel = document.getElementById('saved-panel');
+const savedList = document.getElementById('saved-list');
 
 if (form) {
   form.addEventListener("submit", async (e) => {
@@ -545,13 +560,14 @@ if (form) {
         ranking.slice(0, 5).forEach(r => {
           const row = document.createElement('div');
           row.style.display = 'grid';
-          row.style.gridTemplateColumns = '1fr 80px';
-          row.style.gap = '10px';
+          row.style.gridTemplateColumns = '1fr 120px 48px';
+          row.style.gap = '8px';
           row.style.marginBottom = '6px';
           const name = document.createElement('div');
           name.textContent = r.title;
           const barWrap = document.createElement('div');
-          barWrap.style.background = '#eee';
+          barWrap.style.background = '#f1f5f9';
+          barWrap.style.border = '1px solid #e2e8f0';
           barWrap.style.borderRadius = '999px';
           barWrap.style.height = '10px';
           const bar = document.createElement('div');
@@ -559,13 +575,16 @@ if (form) {
           bar.style.borderRadius = '999px';
           bar.style.width = Math.max(5, Math.min(100, r.score)) + '%';
           bar.style.background = 'linear-gradient(90deg, #f37021, #ff8c4b)';
+          bar.style.boxShadow = '0 1px 2px rgba(0,0,0,0.08) inset';
           barWrap.appendChild(bar);
           const score = document.createElement('div');
           score.textContent = r.score + '%';
           score.style.textAlign = 'right';
+          score.style.fontWeight = '600';
+          score.style.color = '#1f2a44';
           const grid = document.createElement('div');
           grid.style.display = 'grid';
-          grid.style.gridTemplateColumns = '1fr 120px 40px';
+          grid.style.gridTemplateColumns = '1fr 120px 48px';
           grid.style.gap = '8px';
           grid.appendChild(name);
           grid.appendChild(barWrap);
@@ -590,9 +609,9 @@ if (form) {
             mini.style.marginBottom = '8px';
             [['Công nghệ','technology'],['Sáng tạo','creativity'],['Giao tiếp','communication'],['Logic','logic']].forEach(([label,key]) => {
               const wrap = document.createElement('div');
-              const lab = document.createElement('div'); lab.textContent = label; lab.style.fontSize='11px'; lab.style.color='#666';
-              const w = document.createElement('div'); w.style.height='6px'; w.style.background='#eee'; w.style.borderRadius='999px';
-              const b = document.createElement('div'); b.style.height='6px'; b.style.borderRadius='999px'; b.style.width = Math.max(3, Math.min(100, parseInt(f[key]||0)))+'%'; b.style.background='#4b6cb7';
+              const lab = document.createElement('div'); lab.textContent = label; lab.style.fontSize='11px'; lab.style.color='#475569';
+              const w = document.createElement('div'); w.style.height='6px'; w.style.background='#f1f5f9'; w.style.border = '1px solid #e2e8f0'; w.style.borderRadius='999px';
+              const b = document.createElement('div'); b.style.height='6px'; b.style.borderRadius='999px'; b.style.width = Math.max(3, Math.min(100, parseInt(f[key]||0)))+'%'; b.style.background='linear-gradient(90deg, #4b6cb7, #6ea0ff)'; b.style.boxShadow='0 1px 2px rgba(0,0,0,0.08) inset';
               w.appendChild(b);
               wrap.appendChild(lab);
               wrap.appendChild(w);
@@ -850,6 +869,84 @@ if (form) {
     messages.dataset.greeted = "1";
   }
 })();
+</script>
+
+<script>
+// Lưu + quản lý hồ sơ đã lưu
+async function saveCurrentForm() {
+  const payload = {
+    name: document.getElementById('name').value.trim(),
+    cohort: document.getElementById('cohort').value.trim(),
+    interests: document.getElementById('interests').value.trim(),
+    skills: document.getElementById('skills').value.trim(),
+    scores: document.getElementById('scores').value.trim(),
+    favoriteSubjects: document.getElementById('favorite_subjects').value.trim(),
+    careerGoal: document.getElementById('career_goal').value.trim(),
+    studyHabits: document.getElementById('study_habits').value.trim(),
+    affinity: {
+      technology: document.getElementById('aff_tech').value,
+      creativity: document.getElementById('aff_creativity').value,
+      communication: document.getElementById('aff_communication').value,
+      logic: document.getElementById('aff_logic').value,
+    }
+  };
+  const resp = await fetch('{{ route('forms.save') }}', {
+    method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', 'X-CSRF-TOKEN': csrfToken },
+    body: JSON.stringify(payload)
+  });
+  const data = await resp.json();
+  if (data.id) { alert('Đã lưu hồ sơ'); loadSavedForms(); }
+}
+
+async function loadSavedForms() {
+  const resp = await fetch('{{ route('forms.list') }}');
+  const data = await resp.json();
+  const items = data.items || [];
+  savedList.innerHTML = '';
+  items.forEach(it => {
+    const row = document.createElement('div');
+    row.style.display = 'grid';
+    row.style.gridTemplateColumns = '1fr auto auto';
+    row.style.gap = '8px';
+    row.style.alignItems = 'center';
+    row.style.padding = '8px 0';
+    row.style.borderBottom = '1px solid #eee';
+    const label = document.createElement('div');
+    label.textContent = `${it.name} ${it.cohort ? '('+it.cohort+')' : ''}`;
+    const loadBtn = document.createElement('button'); loadBtn.className='btn btn-sm btn-outline-secondary'; loadBtn.textContent='Tải';
+    loadBtn.onclick = async () => {
+      const r = await fetch(`{{ url('/forms') }}/${it.id}`);
+      const j = await r.json();
+      if (j && j.data) {
+        document.getElementById('name').value = j.data.name || '';
+        document.getElementById('cohort').value = j.data.cohort || '';
+        document.getElementById('interests').value = j.data.interests || '';
+        document.getElementById('skills').value = j.data.skills || '';
+        document.getElementById('scores').value = j.data.scores || '';
+        document.getElementById('favorite_subjects').value = j.data.favoriteSubjects || '';
+        document.getElementById('career_goal').value = j.data.careerGoal || '';
+        document.getElementById('study_habits').value = j.data.studyHabits || '';
+        const af = j.data.affinity || {};
+        document.getElementById('aff_tech').value = af.technology || 0;
+        document.getElementById('aff_creativity').value = af.creativity || 0;
+        document.getElementById('aff_communication').value = af.communication || 0;
+        document.getElementById('aff_logic').value = af.logic || 0;
+        alert('Đã nạp hồ sơ vào form');
+      }
+    };
+    const delBtn = document.createElement('button'); delBtn.className='btn btn-sm btn-outline-danger'; delBtn.textContent='Xóa';
+    delBtn.onclick = async () => {
+      await fetch(`{{ url('/forms') }}/${it.id}`, { method: 'DELETE', headers: { 'X-CSRF-TOKEN': csrfToken }});
+      loadSavedForms();
+    };
+    row.appendChild(label); row.appendChild(loadBtn); row.appendChild(delBtn);
+    savedList.appendChild(row);
+  });
+}
+
+document.getElementById('saved-close').onclick = () => savedPanel.style.display='none';
+if (btnSaveForm) btnSaveForm.onclick = saveCurrentForm;
+if (btnShowForms) btnShowForms.onclick = () => { savedPanel.style.display='block'; loadSavedForms(); };
 </script>
 
 </body>

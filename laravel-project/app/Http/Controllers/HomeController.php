@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
@@ -160,11 +161,24 @@ EOT;
         $interests = mb_strtolower((string)($profile['interests'] ?? ''));
         $skills = mb_strtolower((string)($profile['skills'] ?? ''));
         $favoriteSubjects = mb_strtolower((string)($profile['favoriteSubjects'] ?? ''));
+        $scoresStr = (string)($profile['scores'] ?? '');
         $aff = $profile['affinity'] ?? [];
         $tech = (int)($aff['technology'] ?? 0);
         $cre = (int)($aff['creativity'] ?? 0);
         $com = (int)($aff['communication'] ?? 0);
         $log = (int)($aff['logic'] ?? 0);
+
+        // Parse điểm môn học: "Toán:8; Lý:7; Hóa:6; Văn:7; Anh:8"
+        $scores = [];
+        if ($scoresStr !== '') {
+            foreach (preg_split('/[;,]+/', $scoresStr) as $chunk) {
+                if (preg_match('/\s*([\p{L}A-Za-z]+)\s*[:\-]\s*(\d+(?:\.\d+)?)\s*/u', $chunk, $m)) {
+                    $subject = mb_strtolower(trim($m[1]));
+                    $value = (float)$m[2];
+                    $scores[$subject] = $value;
+                }
+            }
+        }
 
         // Từ khoá cho từng ngành
         $kw = [
@@ -219,6 +233,45 @@ EOT;
             }
             $score += $bonus;
 
+            // Điểm cộng theo điểm môn học nổi trội
+            $subjectBonus = 0; $strongSubjects = [];
+            $addSubject = function(array $keys, float $weight = 4.0) use (&$scores, &$subjectBonus, &$strongSubjects) {
+                foreach ($keys as $k) {
+                    foreach ($scores as $subject => $val) {
+                        if (mb_stripos($subject, $k) !== false) {
+                            // cộng điểm theo mức vượt 5.0
+                            $subjectBonus += max(0.0, ($val - 5.0) * $weight);
+                            if ($val >= 7.5) { $strongSubjects[$k] = true; }
+                        }
+                    }
+                }
+            };
+
+            switch ($title) {
+                case 'Công nghệ thông tin':
+                    $addSubject(['toán','toan','lý','ly','tin','cntt']);
+                    break;
+                case 'Quản trị kinh doanh':
+                    $addSubject(['anh','văn','van','toán','toan']);
+                    break;
+                case 'Kế toán':
+                    $addSubject(['toán','toan','lý','ly','tin']);
+                    break;
+                case 'Ngôn ngữ Anh':
+                    $addSubject(['anh','tiếng anh','english']);
+                    break;
+                case 'Du lịch - Nhà hàng - Khách sạn':
+                    $addSubject(['anh','văn','van','địa','dia']);
+                    break;
+                case 'Y khoa':
+                    $addSubject(['sinh','hóa','hoa']);
+                    break;
+                case 'Kiến trúc':
+                    $addSubject(['vẽ','ve','hình','hinh','toán','toan']);
+                    break;
+            }
+            $score += $subjectBonus;
+
             // Chuẩn hoá 0..100
             $score = max(0, min(100, round($score)));
 
@@ -238,6 +291,7 @@ EOT;
             $reasons = [];
             $reasons[] = 'Yếu tố nổi bật: ' . implode(', ', $top2);
             if ($matchCount > 0) $reasons[] = 'Khớp ' . $matchCount . ' từ khoá sở thích/kỹ năng/môn yêu thích.';
+            if (!empty($strongSubjects)) $reasons[] = 'Môn nổi trội: ' . implode(', ', array_keys($strongSubjects));
 
             $ranking[] = [
                 'title' => $title,
@@ -289,5 +343,73 @@ EOT;
             abort(404);
         }
         return view('share', ['data' => $payload]);
+    }
+
+    // --------- Lưu trữ hồ sơ form (file JSON trong storage/app/forms) ---------
+    public function saveForm(Request $request)
+    {
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'cohort' => 'nullable|string|max:50',
+            'interests' => 'nullable|string',
+            'skills' => 'nullable|string',
+            'scores' => 'nullable|string',
+            'favoriteSubjects' => 'nullable|string',
+            'careerGoal' => 'nullable|string',
+            'studyHabits' => 'nullable|string',
+            'affinity' => 'nullable|array',
+        ]);
+
+        $id = substr(bin2hex(random_bytes(8)), 0, 12);
+        $record = [
+            'id' => $id,
+            'data' => $data,
+            'created_at' => now()->toIso8601String(),
+        ];
+        Storage::disk('local')->makeDirectory('forms');
+        Storage::disk('local')->put('forms/' . $id . '.json', json_encode($record, JSON_UNESCAPED_UNICODE));
+        return response()->json(['id' => $id]);
+    }
+
+    public function listForms()
+    {
+        Storage::disk('local')->makeDirectory('forms');
+        $files = Storage::disk('local')->files('forms');
+        $items = [];
+        foreach ($files as $file) {
+            if (str_ends_with($file, '.json')) {
+                $json = json_decode(Storage::disk('local')->get($file), true);
+                if (is_array($json)) {
+                    $items[] = [
+                        'id' => $json['id'] ?? basename($file, '.json'),
+                        'name' => $json['data']['name'] ?? '(không tên)',
+                        'cohort' => $json['data']['cohort'] ?? null,
+                        'created_at' => $json['created_at'] ?? null,
+                    ];
+                }
+            }
+        }
+        // sắp xếp mới nhất trước
+        usort($items, fn($a,$b) => strcmp($b['created_at'] ?? '', $a['created_at'] ?? ''));
+        return response()->json(['items' => $items]);
+    }
+
+    public function getForm(string $id)
+    {
+        $path = 'forms/' . $id . '.json';
+        if (!Storage::disk('local')->exists($path)) {
+            return response()->json(['error' => 'Not found'], 404);
+        }
+        $json = json_decode(Storage::disk('local')->get($path), true);
+        return response()->json($json);
+    }
+
+    public function deleteForm(string $id)
+    {
+        $path = 'forms/' . $id . '.json';
+        if (Storage::disk('local')->exists($path)) {
+            Storage::disk('local')->delete($path);
+        }
+        return response()->json(['ok' => true]);
     }
 }
