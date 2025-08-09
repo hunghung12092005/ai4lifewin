@@ -157,7 +157,7 @@
                 <p class="lead muted mb-4">
                     Hỗ trợ học sinh, sinh viên xác định ngành học phù hợp với
                     sở thích, năng lực và định hướng nghề nghiệp của bản thân và gợi ý ngành
-                    học trong danh mục của FPT Polytechnic.
+                    học phù hợp tại FPT Polytechnic.
                 </p>
                 <div class="d-flex flex-wrap gap-2 mb-3">
                     <span class="badge text-bg-light"><span class="badge-dot"></span>Sáng tạo</span>
