@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta http-equiv="x-ua-compatible" content="ie=edge">
   <title>
-    Toddly - Colorful Kindergarten & Preschool HTML5 Template | Vecuro | Home 1
+    Khat vong AI
   </title>
   <meta name="author" content="vecuro">
   <meta name="description" content="Toddly - Colorful Kindergarten & Preschool HTML5 Template">
@@ -57,13 +57,13 @@
   <!--==============================
 	Preloader
 	==============================-->
-  <div class="preloader">
+  {{-- <div class="preloader">
     <button class="vs-btn preloaderCls">Cancel Preloader </button>
     <div class="preloader-inner">
       <img src="assets/img/logo.svg" alt="logo">
       <span class="loader"></span>
     </div>
-  </div>
+  </div> --}}
   <!--==============================
 		Mobile Menu
 	============================== -->
@@ -99,11 +99,7 @@
                 <path d="M0 4.14031C0 1.87713 1.87602 0.0646902 4.13785 0.142684L83.1379 2.86682C85.2921 2.94111 87 4.70896 87 6.86445V25.0909C87 27.2642 85.2647 29.0399 83.0919 29.0898L4.09193 30.9059C1.84739 30.9575 0 29.1521 0 26.907V4.14031Z" fill="#70167E"></path>
               </svg>
             </a>
-            <ul class="sub-menu">
-              <li><a href="index.html">Home 01</a></li>
-              <li><a href="index-2.html">Home 02</a></li>
-              <li><a href="index-3.html">Home 03</a></li>
-            </ul>
+            
           </li>
           <li class="menu-item-has-children">
             <a class="vs-svg-assets" href="about.html">
@@ -112,89 +108,9 @@
                 <path d="M0 4.14031C0 1.87713 1.87602 0.0646902 4.13785 0.142684L83.1379 2.86682C85.2921 2.94111 87 4.70896 87 6.86445V25.0909C87 27.2642 85.2647 29.0399 83.0919 29.0898L4.09193 30.9059C1.84739 30.9575 0 29.1521 0 26.907V4.14031Z" fill="#70167E"></path>
               </svg>
             </a>
-            <ul class="sub-menu">
-              <li><a href="about.html">About Us</a></li>
-              <li><a href="why-choose-us.html">Why Choose Us</a></li>
-              <li><a href="service-details.html">Service Details</a></li>
-            </ul>
+          
           </li>
-          <li class="menu-item-has-children mega-menu-wrap">
-            <a class="vs-svg-assets" href="javascript:void(0)">
-              Pages
-              <svg xmlns="http://www.w3.org/2000/svg" width="87" height="31" viewBox="0 0 87 31" fill="none">
-                <path d="M0 4.14031C0 1.87713 1.87602 0.0646902 4.13785 0.142684L83.1379 2.86682C85.2921 2.94111 87 4.70896 87 6.86445V25.0909C87 27.2642 85.2647 29.0399 83.0919 29.0898L4.09193 30.9059C1.84739 30.9575 0 29.1521 0 26.907V4.14031Z" fill="#70167E"></path>
-              </svg>
-            </a>
-            <ul class="mega-menu">
-              <li><a href="javascript:void(0)">Page List 1</a>
-                <ul>
-                  <li><a href="index.html">Home 01</a></li>
-                  <li><a href="index-2.html">Home 02</a></li>
-                  <li><a href="index-3.html">Home 03</a></li>
-                  <li><a href="about.html">About Us</a></li>
-                  <li><a href="gallery.html">Gallery</a></li>
-                  <li><a href="service-details.html">Service Details</a></li>
-                  <li><a href="team.html">Teachers</a></li>
-                </ul>
-              </li>
-              <li><a href="javascript:void(0)">Page List 2</a>
-                <ul>
-                  <li><a href="team-details.html">Single Teacher</a></li>
-                  <li><a href="class.html">Class</a></li>
-                  <li><a href="class-details.html">Class Details</a></li>
-                  <li><a href="blog.html">Blog</a></li>
-                  <li><a href="blog-details.html">Blog Details</a></li>
-                  <li><a href="events.html">Events</a></li>
-                  <li><a href="event-details.html">Event Details</a></li>
-                </ul>
-              </li>
-              <li><a href="javascript:void(0)">Page List 3</a>
-                <ul>
-                  <li><a href="registration.html">Admission</a></li>
-                  <li><a href="shop.html">Shop</a></li>
-                  <li><a href="shop-details.html">Shop Details</a></li>
-                  <li><a href="auth.html">Auth</a></li>
-                  <li><a href="myaccount.html">My Account</a></li>
-                  <li><a href="cart.html">Cart</a></li>
-                  <li><a href="checkout.html">Checkout</a></li>
-                </ul>
-              </li>
-              <li><a href="javascript:void(0)">Page List 4</a>
-                <ul>
-                  <li><a href="wishlist.html">Wishlist</a></li>
-                  <li><a href="coming-soon.html">Coming Soon</a></li>
-                  <li><a href="contact.html">Contact Us</a></li>
-                  <li><a href="404.html">404 Page</a></li>
-                </ul>
-              </li>
-            </ul>
-          </li>
-          <li class="menu-item-has-children">
-            <a class="vs-svg-assets" href="shop.html">
-              shop
-              <svg xmlns="http://www.w3.org/2000/svg" width="87" height="31" viewBox="0 0 87 31" fill="none">
-                <path d="M0 4.14031C0 1.87713 1.87602 0.0646902 4.13785 0.142684L83.1379 2.86682C85.2921 2.94111 87 4.70896 87 6.86445V25.0909C87 27.2642 85.2647 29.0399 83.0919 29.0898L4.09193 30.9059C1.84739 30.9575 0 29.1521 0 26.907V4.14031Z" fill="#70167E"></path>
-              </svg>
-            </a>
-            <ul class="sub-menu">
-              <li><a href="shop.html">Main Shop</a></li>
-              <li><a href="shop-right-sidebar.html">Shop Right</a></li>
-              <li><a href="shop-full.html">Shop Full</a></li>
-              <li><a href="shop-details.html">Shop Details</a></li>
-            </ul>
-          </li>
-          <li class="menu-item-has-children">
-            <a class="vs-svg-assets" href="blog.html">
-              blog
-              <svg xmlns="http://www.w3.org/2000/svg" width="87" height="31" viewBox="0 0 87 31" fill="none">
-                <path d="M0 4.14031C0 1.87713 1.87602 0.0646902 4.13785 0.142684L83.1379 2.86682C85.2921 2.94111 87 4.70896 87 6.86445V25.0909C87 27.2642 85.2647 29.0399 83.0919 29.0898L4.09193 30.9059C1.84739 30.9575 0 29.1521 0 26.907V4.14031Z" fill="#70167E"></path>
-              </svg>
-            </a>
-            <ul class="sub-menu">
-              <li><a href="blog.html">Blog</a></li>
-              <li><a href="blog-details.html">Blog Details</a></li>
-            </ul>
-          </li>
+          
           <li>
             <a class="vs-svg-assets" href="contact.html">
               contact
@@ -246,7 +162,7 @@
   <!--==============================
     Cart Sidebar
   ===============================-->
-  <div class="sideCart-wrapper">
+  {{-- <div class="sideCart-wrapper">
     <div class="cart-sidebar-content">
       <!-- Close Button -->
       <div class="sidemenu-logo cart-animation-item">
@@ -354,11 +270,11 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> --}}
   <!--==============================
 		Offcanvas
 	============================== -->
-  <div class="sidemenu-wrapper">
+  {{-- <div class="sidemenu-wrapper">
     <div class="sidemenu-content">
       <div class="sidemenu-logo sidemenu-item">
         <a href="index.html"><img src="assets/img/logo-white.svg" alt="Toddly" class="logo"></a>
@@ -426,7 +342,7 @@
         </div>
       </div>
     </div>
-  </div>
+  </div> --}}
   <!--==============================
         Header layout 1
     ==============================-->
@@ -481,11 +397,7 @@
                         <path d="M0 4.14031C0 1.87713 1.87602 0.0646902 4.13785 0.142684L83.1379 2.86682C85.2921 2.94111 87 4.70896 87 6.86445V25.0909C87 27.2642 85.2647 29.0399 83.0919 29.0898L4.09193 30.9059C1.84739 30.9575 0 29.1521 0 26.907V4.14031Z" fill="#70167E"></path>
                       </svg>
                     </a>
-                    <ul class="sub-menu">
-                      <li><a href="index.html">Home 01</a></li>
-                      <li><a href="index-2.html">Home 02</a></li>
-                      <li><a href="index-3.html">Home 03</a></li>
-                    </ul>
+                    
                   </li>
                   <li class="menu-item-has-children">
                     <a class="vs-svg-assets" href="about.html">
@@ -494,124 +406,22 @@
                         <path d="M0 4.14031C0 1.87713 1.87602 0.0646902 4.13785 0.142684L83.1379 2.86682C85.2921 2.94111 87 4.70896 87 6.86445V25.0909C87 27.2642 85.2647 29.0399 83.0919 29.0898L4.09193 30.9059C1.84739 30.9575 0 29.1521 0 26.907V4.14031Z" fill="#70167E"></path>
                       </svg>
                     </a>
-                    <ul class="sub-menu">
-                      <li><a href="about.html">About Us</a></li>
-                      <li><a href="why-choose-us.html">Why Choose Us</a></li>
-                      <li><a href="service-details.html">Service Details</a></li>
-                    </ul>
-                  </li>
-                  <li class="menu-item-has-children mega-menu-wrap">
-                    <a class="vs-svg-assets" href="javascript:void(0)">
-                      Pages
-                      <svg xmlns="http://www.w3.org/2000/svg" width="87" height="31" viewBox="0 0 87 31" fill="none">
-                        <path d="M0 4.14031C0 1.87713 1.87602 0.0646902 4.13785 0.142684L83.1379 2.86682C85.2921 2.94111 87 4.70896 87 6.86445V25.0909C87 27.2642 85.2647 29.0399 83.0919 29.0898L4.09193 30.9059C1.84739 30.9575 0 29.1521 0 26.907V4.14031Z" fill="#70167E"></path>
-                      </svg>
-                    </a>
-                    <ul class="mega-menu">
-                      <li><a href="javascript:void(0)">Page List 1</a>
-                        <ul>
-                          <li><a href="index.html">Home 01</a></li>
-                          <li><a href="index-2.html">Home 02</a></li>
-                          <li><a href="index-3.html">Home 03</a></li>
-                          <li><a href="about.html">About Us</a></li>
-                          <li><a href="gallery.html">Gallery</a></li>
-                          <li><a href="service-details.html">Service Details</a></li>
-                          <li><a href="team.html">Teachers</a></li>
-                        </ul>
-                      </li>
-                      <li><a href="javascript:void(0)">Page List 2</a>
-                        <ul>
-                          <li><a href="team-details.html">Single Teacher</a></li>
-                          <li><a href="class.html">Class</a></li>
-                          <li><a href="class-details.html">Class Details</a></li>
-                          <li><a href="blog.html">Blog</a></li>
-                          <li><a href="blog-details.html">Blog Details</a></li>
-                          <li><a href="events.html">Events</a></li>
-                          <li><a href="event-details.html">Event Details</a></li>
-                        </ul>
-                      </li>
-                      <li><a href="javascript:void(0)">Page List 3</a>
-                        <ul>
-                          <li><a href="registration.html">Admission</a></li>
-                          <li><a href="shop.html">Shop</a></li>
-                          <li><a href="shop-details.html">Shop Details</a></li>
-                          <li><a href="auth.html">Auth</a></li>
-                          <li><a href="myaccount.html">My Account</a></li>
-                          <li><a href="cart.html">Cart</a></li>
-                          <li><a href="checkout.html">Checkout</a></li>
-                        </ul>
-                      </li>
-                      <li><a href="javascript:void(0)">Page List 4</a>
-                        <ul>
-                          <li><a href="wishlist.html">Wishlist</a></li>
-                          <li><a href="coming-soon.html">Coming Soon</a></li>
-                          <li><a href="contact.html">Contact Us</a></li>
-                          <li><a href="404.html">404 Page</a></li>
-                        </ul>
-                      </li>
-                    </ul>
+                    
                   </li>
                   <li class="menu-item-has-children">
-                    <a class="vs-svg-assets" href="shop.html">
-                      shop
+                    <a class="vs-svg-assets" href="about.html">
+                      About
                       <svg xmlns="http://www.w3.org/2000/svg" width="87" height="31" viewBox="0 0 87 31" fill="none">
                         <path d="M0 4.14031C0 1.87713 1.87602 0.0646902 4.13785 0.142684L83.1379 2.86682C85.2921 2.94111 87 4.70896 87 6.86445V25.0909C87 27.2642 85.2647 29.0399 83.0919 29.0898L4.09193 30.9059C1.84739 30.9575 0 29.1521 0 26.907V4.14031Z" fill="#70167E"></path>
                       </svg>
                     </a>
-                    <ul class="sub-menu">
-                      <li><a href="shop.html">Main Shop</a></li>
-                      <li><a href="shop-right-sidebar.html">Shop Right</a></li>
-                      <li><a href="shop-full.html">Shop Full</a></li>
-                      <li><a href="shop-details.html">Shop Details</a></li>
-                    </ul>
+                    
                   </li>
-                  <li class="menu-item-has-children">
-                    <a class="vs-svg-assets" href="blog.html">
-                      blog
-                      <svg xmlns="http://www.w3.org/2000/svg" width="87" height="31" viewBox="0 0 87 31" fill="none">
-                        <path d="M0 4.14031C0 1.87713 1.87602 0.0646902 4.13785 0.142684L83.1379 2.86682C85.2921 2.94111 87 4.70896 87 6.86445V25.0909C87 27.2642 85.2647 29.0399 83.0919 29.0898L4.09193 30.9059C1.84739 30.9575 0 29.1521 0 26.907V4.14031Z" fill="#70167E"></path>
-                      </svg>
-                    </a>
-                    <ul class="sub-menu">
-                      <li><a href="blog.html">Blog</a></li>
-                      <li><a href="blog-details.html">Blog Details</a></li>
-                    </ul>
-                  </li>
-                  <li>
-                    <a class="vs-svg-assets" href="contact.html">
-                      contact
-                      <svg xmlns="http://www.w3.org/2000/svg" width="87" height="31" viewBox="0 0 87 31" fill="none">
-                        <path d="M0 4.14031C0 1.87713 1.87602 0.0646902 4.13785 0.142684L83.1379 2.86682C85.2921 2.94111 87 4.70896 87 6.86445V25.0909C87 27.2642 85.2647 29.0399 83.0919 29.0898L4.09193 30.9059C1.84739 30.9575 0 29.1521 0 26.907V4.14031Z" fill="#70167E"></path>
-                      </svg>
-                    </a>
-                  </li>
+                  
                 </ul>
               </nav>
             </div>
-            <div class="col-auto">
-              <div class="vs-header__action">
-                <div class="d-none d-md-inline-flex align-items-center">
-                  <button class="searchBoxTggler">
-                    <i class="far fa-search"></i>
-                  </button>
-                </div>
-                <div class="d-none d-xxl-inline-flex">
-                  <a href="contact.html" class="vs-btn"><span class="vs-btn__border"></span>admission</a>
-                </div>
-                <div class="d-none d-lg-inline-flex align-items-center">
-                  <button class="sideMenuToggler">
-                    <svg width="31" height="23" viewBox="0 0 31 23" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M2.9165 4.5H28.4165C29.6594 4.5 30.6665 3.49292 30.6665 2.25C30.6665 1.00708 29.6594 0 28.4165 0H2.9165C1.67358 0 0.666504 1.00708 0.666504 2.25C0.666504 3.49292 1.67358 4.5 2.9165 4.5Z" fill="currentColor" />
-                      <path d="M28.4165 9H2.9165C1.67358 9 0.666504 10.0071 0.666504 11.25C0.666504 12.4929 1.67358 13.5 2.9165 13.5H28.4165C29.6594 13.5 30.6665 12.4929 30.6665 11.25C30.6665 10.0071 29.6594 9 28.4165 9Z" fill="currentColor" />
-                      <path d="M28.4165 18H2.9165C1.67358 18 0.666504 19.0071 0.666504 20.25C0.666504 21.4929 1.67358 22.5 2.9165 22.5H28.4165C29.6594 22.5 30.6665 21.4929 30.6665 20.25C30.6665 19.0071 29.6594 18 28.4165 18Z" fill="currentColor" />
-                    </svg>
-                  </button>
-                </div>
-                <button class="vs-menu-toggle style2 d-inline-block d-lg-none">
-                  <i class="fal fa-bars"></i>
-                </button>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>
@@ -1860,6 +1670,4 @@
     <script src="{{ asset('assets/js/main.js') }}"></script>
 </body>
 
-
-<!-- Mirrored from html.vecurosoft.com/toddly/demo/index.html by HTTrack Website Copier/3.x [XR&CO'2014], Sat, 09 Aug 2025 03:01:01 GMT -->
 </html>
