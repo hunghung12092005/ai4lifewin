@@ -5,6 +5,10 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\HomeController;
 
-Route::get('/', [HomeController::class, 'index']);
 
-Route::get('/chat', [aiController::class, 'hotelLinks']);
+Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::post('/chat', [HomeController::class, 'chat'])->name('home.chat');
+
+
+
+Route::get('/api/majors', [aiController::class, 'Links'])->name('api.majors');
